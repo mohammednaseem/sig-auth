@@ -1,0 +1,18 @@
+/* create device table */
+
+CREATE TABLE device (
+	deviceid serial PRIMARY KEY,
+	name VARCHAR ( 50 ) UNIQUE ,
+	password VARCHAR ( 50 ) NOT NULL,
+    certificate1 VARCHAR ( 250 ),
+    certificate2 VARCHAR ( 250 ),
+    certificate3 VARCHAR ( 250 ),
+    project VARCHAR ( 255 ) NOT NULL,
+	region VARCHAR ( 255 )  NOT NULL,
+	created_on TIMESTAMP NOT NULL
+);
+
+/* insert into device table */
+INSERT INTO public.device(
+	deviceid, name, password, certificate1, certificate2, certificate3, project, region, created_on)
+	VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);
