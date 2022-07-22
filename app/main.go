@@ -135,9 +135,13 @@ func main() {
 		if bInstance == "" {
 			log.Fatalf("No bigTable Instance Specified in Config")
 		}
+		bTable := viper.GetString("bTable")
+		if bTable == "" {
+			log.Fatalf("No bigTable TableSpecified in Config")
+		}
 		client, err := bigtable.NewClient(ctx, bProject, bInstance)
-		tbl := client.Open(tableName)
-		deviceRepository = deviceBigTableRepository.NewDeviceRepository(client,table)
+		tbl := client.Open(bTable)
+		deviceRepository = deviceBigTableRepository.NewDeviceRepository(client,tbl)
 		if err != nil {
 				log.Fatalf("Could not create data operations client: %v", err)
 		}
