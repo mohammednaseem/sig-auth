@@ -13,7 +13,6 @@ import (
 
 func (d *deviceHandler) getDeviceDetails(c echo.Context) error {
 	ctx := c.Request().Context()
-
 	deviceid := c.QueryParam("deviceid")
 	if len(strings.TrimSpace(deviceid)) == 0 {
 		r := ResponseError{Message: "Missing query param DeviceId"}
@@ -42,7 +41,10 @@ type DeviceAndToken struct {
 	DeviceId string `json:"deviceid" validate:"required"`
 	Token    string `json:"token" validate:"required,min=10"`
 }
-
+type ResponseSuccess struct {
+	Result  string `json:"result" xml:"result"`
+	Is_superuser bool `json:"is_superuser" xml:"is_superuser"`
+  }
 func (d *deviceHandler) authN(c echo.Context) error {
 	ctx := c.Request().Context()
 
@@ -56,7 +58,7 @@ func (d *deviceHandler) authN(c echo.Context) error {
 	if !boolVal {
 		return c.JSON(http.StatusForbidden, err)
 	} else {
-		r := ResponseError{Message: "Good token"}
+		r := ResponseSuccess{Result: "allow",Is_superuser:false}
 		return c.JSON(http.StatusOK, r)
 	}
 

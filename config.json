@@ -1,5 +1,6 @@
 {
     "debug": true,
+    "dbType":"btable",
     "ENV_AUTH_SERVER": ":8090",
     "ENV_PPSA":"localhost",
     "ENV_OPA_PORT":"30048",
@@ -10,8 +11,8 @@
     "ENV_DBHOST" : "localhost",
     "ENV_PORT":"5432",
     "ENV_USER":"postgres",
-    "ENV_PASS":"postgres",
-    "DB_NAME":"mqttbroker",
+    "ENV_PASS":"root",
+    "DB_NAME":"postgres",
     "BUCKET_NAME": "koreohio",
     "AWS_REGION" : "us-east-2",
     "AWS_ACCESS_KEY_ID" : "AKIA5244VCYCCZJWF74L" 
