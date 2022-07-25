@@ -3,7 +3,6 @@ package psql
 import (
 	"context"
 	"database/sql"
-	"fmt"
 
 	"github.com/device-auth/helper"
 	"github.com/device-auth/model"
@@ -21,9 +20,9 @@ func getDeviceDetails(db *sql.DB, query string, deviceId string) (mDevice model.
 	var Cerificate1, Cerificate2, Cerificate3 sql.NullString
 	switch err := row.Scan(&mDevice.DeviceId, &mDevice.Name, &mDevice.Password, &Cerificate1, &Cerificate2, &Cerificate3, &mDevice.Project, &mDevice.Region, &mDevice.Created_On); err {
 	case sql.ErrNoRows:
-		fmt.Print("There is no retrieved rows, dummy!")
+		log.Info().Msg("There is no retrieved rows, dummy!")
 	case nil:
-		fmt.Print(mDevice.DeviceId, "\n")
+		log.Info().Msg(mDevice.DeviceId)
 	default:
 		panic(err)
 	}

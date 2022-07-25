@@ -130,9 +130,11 @@ func main() {
 		}
 
 		defer func() {
-			err := dbConn.Close()
-			if err != nil {
-				log.Fatal().Err(err).Msg("")
+			if dbType == "bigtable" {
+				err := dbConn.Close()
+				if err != nil {
+					log.Fatal().Err(err).Msg("")
+				}
 			}
 		}()
 
