@@ -5,8 +5,11 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
-	"log"
+
+	//"log"
 	"net/http"
+
+	"github.com/rs/zerolog/log"
 )
 
 func Http_Get(url string, headers map[string]string) (outresponse []byte, err error) {
@@ -14,7 +17,7 @@ func Http_Get(url string, headers map[string]string) (outresponse []byte, err er
 
 	request, error := http.NewRequest("GET", httpposturl, nil)
 	if error != nil {
-		log.Fatal(error)
+		log.Fatal().Err(error).Msg("")
 		return nil, error
 	}
 
@@ -26,17 +29,17 @@ func Http_Get(url string, headers map[string]string) (outresponse []byte, err er
 
 	res, err := http.Get(url)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal().Err(err).Msg("")
 		return nil, error
 	}
 	body, err := io.ReadAll(res.Body)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal().Err(err).Msg("")
 		return nil, error
 	}
 	err = res.Body.Close()
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal().Err(err).Msg("")
 		return nil, error
 	}
 	fmt.Printf("%s", body)
@@ -47,7 +50,7 @@ func Http_Post(httpposturl string, headers map[string]string, jsonpayload []byte
 	fmt.Println(httpposturl)
 	request, error := http.NewRequest("POST", httpposturl, bytes.NewBuffer(jsonpayload))
 	if error != nil {
-		log.Fatal(error)
+		log.Fatal().Err(error).Msg("")
 		return nil, error
 	}
 
@@ -56,13 +59,13 @@ func Http_Post(httpposturl string, headers map[string]string, jsonpayload []byte
 	client := &http.Client{}
 	response, error := client.Do(request)
 	if error != nil {
-		log.Fatal(error)
+		log.Fatal().Err(error).Msg("")
 		return nil, error
 	}
 	defer response.Body.Close()
 
 	if error != nil {
-		log.Fatal(error)
+		log.Fatal().Err(error).Msg("")
 		return nil, error
 	}
 	body, _ := ioutil.ReadAll(response.Body)

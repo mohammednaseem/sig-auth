@@ -1,4 +1,4 @@
-package btable
+package bigtable
 
 import (
 	bigtable "cloud.google.com/go/bigtable"
@@ -6,10 +6,10 @@ import (
 )
 
 type deviceRepository struct {
-	Conn *bigtable.Client
+	Conn  *bigtable.Client
 	Table *bigtable.Table
 }
 
-func NewDeviceRepository(Conn *bigtable.Client,Table *bigtable.Table) model.IDeviceRepository {
-	return &deviceRepository{Conn: Conn,Table:Table}
+func NewDeviceRepository(Conn *bigtable.Client, Table *bigtable.Table) model.IDeviceRepository {
+	return &deviceRepository{Conn: Conn, Table: Table}
 }

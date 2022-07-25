@@ -5,28 +5,32 @@ import (
 	"database/sql"
 	"flag"
 	"fmt"
-	"log"
+
+	bigtable "cloud.google.com/go/bigtable"
+	deviceDelivery "github.com/device-auth/implementation/delivery/http"
+	deviceBigTableRepository "github.com/device-auth/implementation/repository/bigtable"
+	devicePostgresRepository "github.com/device-auth/implementation/repository/postgresql"
+	deviceUsecase "github.com/device-auth/implementation/usecase"
+	deviceModel "github.com/device-auth/model"
+
 	"net/http"
 	"os"
 	"strconv"
 	"strings"
 	"time"
-	bigtable "cloud.google.com/go/bigtable"
-	deviceModel "github.com/device-auth/model"
-	deviceDelivery "github.com/device-auth/implementation/delivery/http"
-	deviceBigTableRepository "github.com/device-auth/implementation/repository/bigtable"
-	devicePostgresRepository "github.com/device-auth/implementation/repository/postgresql"
-	deviceUsecase "github.com/device-auth/implementation/usecase"
 
 	"github.com/labstack/echo"
 	"github.com/labstack/echo/middleware"
+	Log "github.com/labstack/gommon/log"
+	"github.com/rs/zerolog/log"
 	"github.com/spf13/viper"
+	lecho "github.com/ziflex/lecho"
 )
 
 func init() {
 	path, err := os.Getwd()
 	if err != nil {
-		log.Println(err)
+		log.Error().Err(err).Msg("")
 	}
 	fmt.Println(`path: ` + path)
 	viper.SetConfigType(`json`)
@@ -42,7 +46,7 @@ func init() {
 	}
 
 	if viper.GetBool(`debug`) {
-		log.Println("Service RUN on DEBUG mode")
+		log.Print("Service RUN on DEBUG mode")
 	}
 }
 
@@ -56,7 +60,16 @@ func main() {
 	viper.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
 
 	e := echo.New()
-	e.Use(middleware.Logger())
+	logger := lecho.New(
+		os.Stdout,
+		lecho.WithLevel(Log.DEBUG),
+		lecho.WithTimestamp(),
+		lecho.WithCaller(),
+	)
+	e.Logger = logger
+	e.Use(lecho.Middleware(lecho.Config{
+		Logger: logger}))
+	//e.Use(middleware.Logger())
 	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
 		AllowOrigins: []string{"*"},
 		AllowMethods: []string{http.MethodGet, http.MethodPut, http.MethodPost, http.MethodPatch, http.MethodDelete},
@@ -74,12 +87,12 @@ func main() {
 		fmt.Println("Configuration Error: ENV_OPA_PORT port not available")
 	}
 	dbType := viper.GetString("dbType")
-	if dbType== "" {
+	if dbType == "" {
 		fmt.Println("Configuration Error: dbType not available")
 	}
-	var deviceRepository deviceModel.IDeviceRepository;
-	if dbType=="psql"{
-		log.Println("psql")
+	var deviceRepository deviceModel.IDeviceRepository
+	if dbType == "psql" {
+		log.Print("psql")
 		dbHost := viper.GetString("ENV_DBHOST")
 		if dbHost == "" {
 			dbHost = viper.GetString(`db_host`)
@@ -109,49 +122,48 @@ func main() {
 		dbConn, err := sql.Open("postgres", connectionString)
 
 		if err != nil {
-			log.Fatal(err)
+			log.Fatal().Err(err).Msg("")
 		}
 		err = dbConn.Ping()
 		if err != nil {
-			log.Fatal(err)
+			log.Fatal().Err(err).Msg("")
 		}
 
 		defer func() {
 			err := dbConn.Close()
 			if err != nil {
-				log.Fatal(err)
+				log.Fatal().Err(err).Msg("")
 			}
 		}()
 
 		deviceRepository = devicePostgresRepository.NewDeviceRepository(dbConn)
-	} else if dbType=="btable"{
-		log.Println("btable")
+	} else if dbType == "bigtable" {
 		ctx := context.Background()
-		bProject := viper.GetString("bProject")
+		bProject := viper.GetString("bigProject")
 		if bProject == "" {
-			log.Fatalf("No bigTable Project Specified in Config")
+			log.Fatal().Msg("No bigTable Project Specified in Config")
 		}
-		bInstance := viper.GetString("bInstance")
+		bInstance := viper.GetString("bigInstance")
 		if bInstance == "" {
-			log.Fatalf("No bigTable Instance Specified in Config")
+			log.Fatal().Msg("No bigTable Instance Specified in Config")
 		}
 		bTable := viper.GetString("bTable")
 		if bTable == "" {
-			log.Fatalf("No bigTable TableSpecified in Config")
+			log.Fatal().Msg("No bigTable Table Specified in Config")
 		}
 		client, err := bigtable.NewClient(ctx, bProject, bInstance)
+		log.Print("bigtable")
 		tbl := client.Open(bTable)
-		deviceRepository = deviceBigTableRepository.NewDeviceRepository(client,tbl)
+		deviceRepository = deviceBigTableRepository.NewDeviceRepository(client, tbl)
 		if err != nil {
-				log.Fatalf("Could not create data operations client: %v", err)
+			log.Fatal().Err(err).Msg("Could not create data operations client ")
 		}
 
-
-	} else{
-		log.Fatal("Db Type Not Found")
+	} else {
+		log.Fatal().Msg("Db Type Not Found")
 	}
 	deviceUseCase := deviceUsecase.NewDeviceUsecase(deviceRepository, timeoutContext)
 	deviceDelivery.NewDeviceHandler(e, deviceUseCase)
 
-	log.Fatal(e.Start(viper.GetString("ENV_AUTH_SERVER")))
+	log.Fatal().Err((e.Start(viper.GetString("ENV_AUTH_SERVER")))).Msg("")
 }
