@@ -10,12 +10,12 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-func getDeviceDetails(ctx context.Context, db *sql.DB, query string, deviceId string) (mDevice model.Device, err error) {
+func getDeviceDetails(db *sql.DB, query string, deviceId string) (mDevice model.Device, err error) {
 	log.Debug().Str("query", query).Msg("")
 	row := db.QueryRow(query, deviceId)
 	if err != nil {
 		err = helper.CheckDatabaseError(err)
-		fmt.Println(err)
+		log.Error().Err(err).Msg("")
 		return model.Device{}, err
 	}
 	var Cerificate1, Cerificate2, Cerificate3 sql.NullString
@@ -41,7 +41,7 @@ func getDeviceDetails(ctx context.Context, db *sql.DB, query string, deviceId st
 
 func (d *deviceRepository) GetAllPublicKeysForDevice(ctx context.Context, deviceId string) (model.Device, error) {
 	query := `SELECT * FROM public.device  WHERE deviceid=$1;`
-	mDevices, err := getDeviceDetails(ctx, d.Conn, query, deviceId)
+	mDevices, err := getDeviceDetails(d.Conn, query, deviceId)
 
 	switch {
 	case err == sql.ErrNoRows:

@@ -1,13 +1,13 @@
 package bigtable
 
 import (
-	bigtable "cloud.google.com/go/bigtable"
 	"context"
 	"fmt"
-	"github.com/device-auth/model"
-	Log "github.com/rs/zerolog/log"
-	"log"
 	"strings"
+
+	bigtable "cloud.google.com/go/bigtable"
+	"github.com/device-auth/model"
+	"github.com/rs/zerolog/log"
 )
 
 func printRow(row bigtable.Row) {
@@ -21,10 +21,11 @@ func printRow(row bigtable.Row) {
 	}
 }
 func getDeviceDetails(ctx context.Context, db *bigtable.Client, table *bigtable.Table, query string, deviceId string) (mDevice model.Device, err error) {
-	Log.Debug().Str("query", query).Msg("")
+	log.Debug().Str("query", query).Msg("")
 	row, err := table.ReadRow(ctx, deviceId)
 	if err != nil {
-		log.Fatalf("Could not read row with key %s: %v", deviceId, err)
+		msg := "Could not read row with key " + deviceId
+		log.Fatal().Err(err).Msg(msg)
 	}
 	printRow(row)
 	return
@@ -34,7 +35,7 @@ func (d *deviceRepository) GetAllPublicKeysForDevice(ctx context.Context, device
 	query := `SELECT * FROM public.device  WHERE deviceid=$1;`
 	mDevices, err := getDeviceDetails(ctx, d.Conn, d.Table, query, deviceId)
 	if err != nil {
-		log.Fatalf("Error Fetching From Big Table", err)
+		log.Fatal().Err(err).Msg("Error Fetching From Big Table")
 	}
 
 	return mDevices, nil

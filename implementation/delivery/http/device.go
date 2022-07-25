@@ -1,7 +1,6 @@
 package http
 
 import (
-	"fmt"
 	"net/http"
 	"strconv"
 	"strings"
@@ -42,15 +41,16 @@ type DeviceAndToken struct {
 	Token    string `json:"token" validate:"required,min=10"`
 }
 type ResponseSuccess struct {
-	Result  string `json:"result" xml:"result"`
-	Is_superuser bool `json:"is_superuser" xml:"is_superuser"`
-  }
+	Result       string `json:"result" xml:"result"`
+	Is_superuser bool   `json:"is_superuser" xml:"is_superuser"`
+}
+
 func (d *deviceHandler) authN(c echo.Context) error {
 	ctx := c.Request().Context()
 
 	dt := new(DeviceAndToken)
 	if err := c.Bind(dt); err != nil {
-		fmt.Println(err)
+		log.Error().Err(err).Msg("")
 		r := ResponseError{Message: "Data not good"}
 		return c.JSON(http.StatusBadRequest, r)
 	}
@@ -58,7 +58,7 @@ func (d *deviceHandler) authN(c echo.Context) error {
 	if !boolVal {
 		return c.JSON(http.StatusForbidden, err)
 	} else {
-		r := ResponseSuccess{Result: "allow",Is_superuser:false}
+		r := ResponseSuccess{Result: "allow", Is_superuser: false}
 		return c.JSON(http.StatusOK, r)
 	}
 

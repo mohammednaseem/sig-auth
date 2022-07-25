@@ -32,7 +32,7 @@ func init() {
 	if err != nil {
 		log.Error().Err(err).Msg("")
 	}
-	fmt.Println(`path: ` + path)
+	log.Error().Err(err).Msg((`path: ` + path))
 	viper.SetConfigType(`json`)
 	viper.SetConfigName(`config`)
 	viper.AddConfigPath(`./`)
@@ -40,18 +40,18 @@ func init() {
 
 	if err := viper.ReadInConfig(); err != nil {
 		if _, ok := err.(viper.ConfigFileNotFoundError); ok {
-			fmt.Println("config file not found")
+			log.Error().Err(err).Msg("config file not found")
 		}
 		panic(err)
 	}
 
 	if viper.GetBool(`debug`) {
-		log.Print("Service RUN on DEBUG mode")
+		log.Info().Msg("Service RUN on DEBUG mode")
 	}
 }
 
 func main() {
-	fmt.Println("Go Time")
+	log.Info().Msg("Go Time")
 
 	flag.Parse()
 
@@ -80,15 +80,15 @@ func main() {
 
 	url := viper.GetString("ENV_PPSA")
 	if url == "" {
-		fmt.Println("Configuration Error: ENV_PPSA address not available")
+		log.Error().Msg("Configuration Error: ENV_PPSA address not available")
 	}
 	port := viper.GetString("ENV_OPA_PORT")
 	if port == "" {
-		fmt.Println("Configuration Error: ENV_OPA_PORT port not available")
+		log.Error().Msg("Configuration Error: ENV_OPA_PORT port not available")
 	}
 	dbType := viper.GetString("dbType")
 	if dbType == "" {
-		fmt.Println("Configuration Error: dbType not available")
+		log.Error().Msg("Configuration Error: dbType not available")
 	}
 	var deviceRepository deviceModel.IDeviceRepository
 	if dbType == "psql" {

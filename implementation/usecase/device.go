@@ -14,7 +14,7 @@ func (d *dDeviceUsecase) GetAllPublicKeysForDevice(ctx context.Context, deviceId
 
 	mDevice, err := d.deviceRepo.GetAllPublicKeysForDevice(c, deviceId)
 	if err != nil {
-		log.Fatal().Err(err).Msg("")
+		log.Error().Err(err).Msg("")
 		return model.Device{}, err
 	}
 	return mDevice, err
@@ -26,7 +26,7 @@ func (d *dDeviceUsecase) IsValidCertificate(ctx context.Context, deviceId string
 
 	mDevice, err := d.GetAllPublicKeysForDevice(c, deviceId)
 	if err != nil {
-		log.Fatal().Err(err).Msg("")
+		log.Error().Err(err).Msg("")
 		return false, err
 	}
 
