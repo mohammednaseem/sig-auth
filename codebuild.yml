@@ -1,0 +1,45 @@
+steps:
+# Step 1
+- name: 'gcr.io/cloud-builders/docker'
+entrypoint: 'bash'
+args: [
+'-c', 
+'docker pull gcr.io/my-iot-356305/my-nginx:latest || exit 0'
+]
+# Step 2
+- name: gcr.io/cloud-builders/docker
+args: [
+'build', 
+'-t', 
+'gcr.io/my-iot-356305/my-nginx:latest',
+'.'
+]
+dir: 'my-app-vue'
+# Step 2.2
+- name: gcr.io/cloud-builders/docker
+args: [
+'push', 
+'gcr.io/my-iot-356305/my-nginx:latest'
+]
+# Step 3
+- name: 'gcr.io/cloud-builders/kubectl'
+args: ['apply', '-f', 'k8s/']
+env:
+- 'CLOUDSDK_COMPUTE_ZONE=us-east1-b'
+- 'CLOUDSDK_CONTAINER_CLUSTER=my-nginx'
+# Step 4
+- name: 'gcr.io/cloud-builders/kubectl'
+args: [
+'set', 
+'image', 
+'deployment', 
+'nginx', 
+'nginx=gcr.io/my-iot-356305/my-nginx:latest'
+]
+env:
+- 'CLOUDSDK_COMPUTE_ZONE=us-east1-b'
+- 'CLOUDSDK_CONTAINER_CLUSTER=my-nginx'
+# Push the image to Google Container Registry with the latest tag
+images: [
+'gcr.io/my-iot-356305/my-nginx:latest'
+]
