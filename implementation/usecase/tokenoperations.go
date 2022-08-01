@@ -2,11 +2,10 @@ package usecase
 
 import (
 	"errors"
-	"strings"
-
 	"github.com/device-auth/model"
 	jwt "github.com/golang-jwt/jwt"
 	"github.com/rs/zerolog/log"
+	"strings"
 )
 
 // Verify a JWT token using an RSA public key
@@ -17,7 +16,6 @@ func VerifyJWT(token string, mdevice model.Device, algorithm string) (bool, erro
 			publicCerts = append(publicCerts, element.PublicKey.Key)
 		}
 	}
-
 	// parse token // verify with all available public certificates
 	state, err := jwt.Parse(token, func(token *jwt.Token) (interface{}, error) {
 
@@ -64,6 +62,7 @@ func IdentifyAndVerifyJWT(token string, mDevice model.Device) (bool, error) {
 		}
 		return true, nil
 	})
+
 	boolVal, err := VerifyJWT(token, mDevice, signingMethod)
 	if !boolVal {
 		log.Error().Err(err).Msg("")

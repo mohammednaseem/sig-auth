@@ -29,7 +29,6 @@ func (d *dDeviceUsecase) IsValidCertificate(ctx context.Context, deviceId string
 		log.Error().Err(err).Msg("")
 		return false, err
 	}
-
 	isValidDevice, err := IdentifyAndVerifyJWT(token, mDevice)
 
 	return isValidDevice, err

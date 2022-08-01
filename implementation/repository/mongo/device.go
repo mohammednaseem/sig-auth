@@ -16,16 +16,15 @@ func getDeviceDetails(ctx context.Context, client *mongo.Client, db string, coll
 	}
 
 	// Returns result of deletion and error
-	var queryResult model.Device
-	err = queryOne(ctx, client, db, collection, filter).Decode(&queryResult)
+	err = queryOne(ctx, client, db, collection, filter).Decode(&mDevice)
 	if err != nil {
 		log.Error().Err(err).Msg("")
 	}
 	// print the count of affected documents
-	if queryResult.Id == "" {
+	if mDevice.Id == "" {
 		log.Error().Msg("No Data Found in Db")
 	}
-	log.Info().Msg("Got Details For Device" + queryResult.Id)
+	log.Info().Msg("Got Details For Device" + mDevice.Id)
 	return
 }
 
