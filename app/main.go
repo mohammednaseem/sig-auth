@@ -7,11 +7,15 @@ import (
 	"fmt"
 
 	bigtable "cloud.google.com/go/bigtable"
-	deviceDelivery "github.com/device-auth/implementation/delivery/http"
 	deviceBigTableRepository "github.com/device-auth/implementation/repository/bigtable"
+	deviceMongoRepository "github.com/device-auth/implementation/repository/mongo"
 	devicePostgresRepository "github.com/device-auth/implementation/repository/postgresql"
+	deviceDelivery "github.com/device-auth/implementation/start/http"
 	deviceUsecase "github.com/device-auth/implementation/usecase"
 	deviceModel "github.com/device-auth/model"
+	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
+	"go.mongodb.org/mongo-driver/mongo/readpref"
 
 	"net/http"
 	"os"
@@ -27,6 +31,46 @@ import (
 	lecho "github.com/ziflex/lecho"
 )
 
+func closeMongo(ctx context.Context, client *mongo.Client, cancel context.CancelFunc) {
+	log.Info().Msg("Closing Mongo Conection")
+	defer cancel()
+	defer func() {
+		if err := client.Disconnect(ctx); err != nil {
+			panic(err)
+		}
+	}()
+}
+
+// This is a user defined method that returns
+// a mongo.Client, context.Context,
+// context.CancelFunc and error.
+// mongo.Client will be used for further database
+// operation. context.Context will be used set
+// deadlines for process. context.CancelFunc will
+// be used to cancel context and resource
+// associated with it.
+func connect(uri string) (context.Context, *mongo.Client, error) {
+	ctx := context.Background()
+	client, err := mongo.Connect(ctx, options.Client().ApplyURI(uri))
+	return ctx, client, err
+}
+
+// This is a user defined method that accepts
+// mongo.Client and context.Context
+// This method used to ping the mongoDB, return error if any.
+func ping(ctx context.Context, client *mongo.Client) error {
+
+	// mongo.Client has Ping to ping mongoDB, deadline of
+	// the Ping method will be determined by cxt
+	// Ping method return error if any occurred, then
+	// the error can be handled.
+	if err := client.Ping(ctx, readpref.Primary()); err != nil {
+		log.Error().Msg("Connection Unsuccessful")
+		return err
+	}
+	log.Info().Msg("connected successfully")
+	return nil
+}
 func init() {
 	path, err := os.Getwd()
 	if err != nil {
@@ -91,6 +135,9 @@ func main() {
 		log.Error().Msg("Configuration Error: dbType not available")
 	}
 	var deviceRepository deviceModel.IDeviceRepository
+	var clientMongo *mongo.Client
+	var cancel context.CancelFunc
+	var ctx context.Context
 	if dbType == "psql" {
 		log.Print("psql")
 		dbHost := viper.GetString("ENV_DBHOST")
@@ -161,11 +208,42 @@ func main() {
 			log.Fatal().Err(err).Msg("Could not create data operations client ")
 		}
 
+	} else if dbType == "mongo" {
+		ctx := context.Background()
+		MongoCS := viper.GetString("MongoCS")
+		if MongoCS == "" {
+			log.Error().Msg("Configuration Error: MongoDB Connection String address not available")
+
+		}
+		MongoDB := viper.GetString("MongoDB")
+		if MongoDB == "" {
+			log.Error().Msg("Configuration Error: MongoDB Database String not available")
+
+		}
+		DeviceCollection := viper.GetString("MongoCollection")
+		if DeviceCollection == "" {
+			log.Error().Msg("Configuration Error: MongoDB Device Collection String not available")
+
+		}
+		var err error
+		ctx, clientMongo, err = connect(MongoCS)
+		if err != nil {
+			panic(err)
+		}
+		ping(ctx, clientMongo)
+		deviceRepository = deviceMongoRepository.NewDeviceRepository(ctx, clientMongo, DeviceCollection, MongoDB)
+		if err != nil {
+			log.Fatal().Err(err).Msg("Could not create data operations client ")
+		}
 	} else {
 		log.Fatal().Msg("Db Type Not Found")
 	}
 	deviceUseCase := deviceUsecase.NewDeviceUsecase(deviceRepository, timeoutContext)
 	deviceDelivery.NewDeviceHandler(e, deviceUseCase)
-
+	defer func() {
+		if dbType == "kore" {
+			deviceMongoRepository.CloseMongo(ctx, clientMongo, cancel)
+		}
+	}()
 	log.Fatal().Err((e.Start(viper.GetString("ENV_AUTH_SERVER")))).Msg("")
 }

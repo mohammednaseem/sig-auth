@@ -29,7 +29,7 @@ func (d *deviceHandler) getDeviceDetails(c echo.Context) error {
 		log.Error().Err(err).Str("Method", "GetEnvironment").Int("Environment", 1).Msg("")
 		return c.JSON(helper.GetStatusCode(err), ResponseError{Message: err.Error()})
 	}
-	if len(strings.TrimSpace(device.DeviceId)) == 0 {
+	if len(strings.TrimSpace(device.Id)) == 0 {
 		return c.JSON(http.StatusNotFound, nil)
 	} else {
 		return c.JSON(http.StatusOK, device)

@@ -12,14 +12,10 @@ import (
 // Verify a JWT token using an RSA public key
 func VerifyJWT(token string, mdevice model.Device, algorithm string) (bool, error) {
 	var publicCerts []string
-	if len(strings.TrimSpace(mdevice.Cerificate1)) != 0 {
-		publicCerts = append(publicCerts, mdevice.Cerificate1)
-	}
-	if len(strings.TrimSpace(mdevice.Cerificate2)) != 0 {
-		publicCerts = append(publicCerts, mdevice.Cerificate2)
-	}
-	if len(strings.TrimSpace(mdevice.Cerificate3)) != 0 {
-		publicCerts = append(publicCerts, mdevice.Cerificate3)
+	for _, element := range mdevice.Credentials {
+		if len(strings.TrimSpace(element.PublicKey.Key)) != 0 {
+			publicCerts = append(publicCerts, element.PublicKey.Key)
+		}
 	}
 
 	// parse token // verify with all available public certificates

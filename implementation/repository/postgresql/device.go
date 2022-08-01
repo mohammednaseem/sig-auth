@@ -18,22 +18,22 @@ func getDeviceDetails(db *sql.DB, query string, deviceId string) (mDevice model.
 		return model.Device{}, err
 	}
 	var Cerificate1, Cerificate2, Cerificate3 sql.NullString
-	switch err := row.Scan(&mDevice.DeviceId, &mDevice.Name, &mDevice.Password, &Cerificate1, &Cerificate2, &Cerificate3, &mDevice.Project, &mDevice.Region, &mDevice.Created_On); err {
+	switch err := row.Scan(&mDevice.Id, &mDevice.Registry, &Cerificate1, &Cerificate2, &Cerificate3, &mDevice.Project, &mDevice.Region, &mDevice.CreatedOn); err {
 	case sql.ErrNoRows:
 		log.Info().Msg("There is no retrieved rows, dummy!")
 	case nil:
-		log.Info().Msg(mDevice.DeviceId)
+		log.Info().Msg(mDevice.Id)
 	default:
 		panic(err)
 	}
 	if Cerificate1.Valid {
-		mDevice.Cerificate1 = Cerificate1.String
+		mDevice.Credentials[0].PublicKey.Key = Cerificate1.String
 	}
 	if Cerificate2.Valid {
-		mDevice.Cerificate2 = Cerificate2.String
+		mDevice.Credentials[1].PublicKey.Key = Cerificate2.String
 	}
 	if Cerificate3.Valid {
-		mDevice.Cerificate3 = Cerificate3.String
+		mDevice.Credentials[2].PublicKey.Key = Cerificate3.String
 	}
 	return
 }

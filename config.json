@@ -1,6 +1,6 @@
 {
     "debug": true,
-    "dbType":"psql",
+    "dbType":"mongo",
     "ENV_AUTH_SERVER": ":8090",
     "ENV_PPSA":"localhost",
     "ENV_OPA_PORT":"30048",
@@ -18,6 +18,10 @@
     "AWS_ACCESS_KEY_ID" : "AKIA5244VCYCCZJWF74L" ,
     "bigTable":"test",
     "bigInstance":"dev",
-    "bigProject":"dev"
+    "bigProject":"dev",
+    "MongoCS": "mongodb+srv://shaiz:12345@cluster0.ugy2c.mongodb.net/?retryWrites=true&w=majority",
+    "MongoDB": "test",
+    "MongoCollection": "Data"
+
 }
   
