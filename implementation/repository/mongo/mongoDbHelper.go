@@ -29,17 +29,17 @@ func Ping(ctx context.Context, client *mongo.Client) error {
 // insertOne is a user defined method, used to insert
 // documents into collection returns result of InsertOne
 // and error if any.
-func insertOne(ctx context.Context, client *mongo.Client, dataBase, col string, doc interface{}) (*mongo.InsertOneResult, error) {
+// func insertOne(ctx context.Context, client *mongo.Client, dataBase, col string, doc interface{}) (*mongo.InsertOneResult, error) {
 
-	// select database and collection ith Client.Database method
-	// and Database.Collection method
-	collection := client.Database(dataBase).Collection(col)
+// 	// select database and collection ith Client.Database method
+// 	// and Database.Collection method
+// 	collection := client.Database(dataBase).Collection(col)
 
-	// InsertOne accept two argument of type Context
-	// and of empty interface
-	result, err := collection.InsertOne(ctx, doc)
-	return result, err
-}
+// 	// InsertOne accept two argument of type Context
+// 	// and of empty interface
+// 	result, err := collection.InsertOne(ctx, doc)
+// 	return result, err
+// }
 
 // query is user defined method used to query MongoDB,
 // that accepts mongo.client,context, database name,
@@ -51,17 +51,17 @@ func insertOne(ctx context.Context, client *mongo.Client, dataBase, col string, 
 // the field being returned.
 
 // query method returns a cursor and error.
-func query(ctx context.Context, client *mongo.Client, dataBase, col string, query interface{}) (result *mongo.Cursor, err error) {
+// func query(ctx context.Context, client *mongo.Client, dataBase, col string, query interface{}) (result *mongo.Cursor, err error) {
 
-	// select database and collection.
-	collection := client.Database(dataBase).Collection(col)
+// 	// select database and collection.
+// 	collection := client.Database(dataBase).Collection(col)
 
-	// collection has an method Find,
-	// that returns a mongo.cursor
-	// based on query and field.
-	result, err = collection.Find(ctx, query, options.Find().SetLimit(10))
-	return
-}
+// 	// collection has an method Find,
+// 	// that returns a mongo.cursor
+// 	// based on query and field.
+// 	result, err = collection.Find(ctx, query, options.Find().SetLimit(10))
+// 	return
+// }
 
 // query is user defined method used to query MongoDB,
 // that accepts mongo.client,context, database name,
@@ -84,30 +84,31 @@ func queryOne(ctx context.Context, client *mongo.Client, dataBase, col string, q
 	result = collection.FindOne(ctx, query)
 	return
 }
-func UpdateOne(ctx context.Context, client *mongo.Client, dataBase, col string, filter, update interface{}) (result *mongo.UpdateResult, err error) {
 
-	// select the database and the collection
-	collection := client.Database(dataBase).Collection(col)
+// func UpdateOne(ctx context.Context, client *mongo.Client, dataBase, col string, filter, update interface{}) (result *mongo.UpdateResult, err error) {
 
-	// A single document that match with the
-	// filter will get updated.
-	// update contains the filed which should get updated.
-	result, err = collection.UpdateOne(ctx, filter, update)
-	return
-}
+// 	// select the database and the collection
+// 	collection := client.Database(dataBase).Collection(col)
 
-// deleteOne is a user defined function that delete,
-// a single document from the collection.
-// Returns DeleteResult and an  error if any.
-func deleteOne(ctx context.Context, client *mongo.Client, dataBase, col string, query interface{}) (result *mongo.DeleteResult, err error) {
+// 	// A single document that match with the
+// 	// filter will get updated.
+// 	// update contains the filed which should get updated.
+// 	result, err = collection.UpdateOne(ctx, filter, update)
+// 	return
+// }
 
-	// select document and collection
-	collection := client.Database(dataBase).Collection(col)
+// // deleteOne is a user defined function that delete,
+// // a single document from the collection.
+// // Returns DeleteResult and an  error if any.
+// func deleteOne(ctx context.Context, client *mongo.Client, dataBase, col string, query interface{}) (result *mongo.DeleteResult, err error) {
 
-	// query is used to match a document  from the collection.
-	result, err = collection.DeleteOne(ctx, query)
-	return
-}
+// 	// select document and collection
+// 	collection := client.Database(dataBase).Collection(col)
+
+// 	// query is used to match a document  from the collection.
+// 	result, err = collection.DeleteOne(ctx, query)
+// 	return
+// }
 
 // This is a user defined method to close resources.
 // This method closes mongoDB connection and cancel context.

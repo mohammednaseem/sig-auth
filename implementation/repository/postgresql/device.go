@@ -38,7 +38,7 @@ func getDeviceDetails(db *sql.DB, query string, deviceId string) (mDevice model.
 	return
 }
 
-func (d *deviceRepository) GetAllPublicKeysForDevice(ctx context.Context, deviceId string) (model.Device, error) {
+func (d *deviceRepository) GetAllPublicKeysForDevice(_ context.Context, deviceId string) (model.Device, error) {
 	query := `SELECT * FROM public.device  WHERE deviceid=$1;`
 	mDevices, err := getDeviceDetails(d.Conn, query, deviceId)
 

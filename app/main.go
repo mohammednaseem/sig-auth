@@ -14,8 +14,6 @@ import (
 	deviceUsecase "github.com/device-auth/implementation/usecase"
 	deviceModel "github.com/device-auth/model"
 	"go.mongodb.org/mongo-driver/mongo"
-	"go.mongodb.org/mongo-driver/mongo/options"
-	"go.mongodb.org/mongo-driver/mongo/readpref"
 
 	"net/http"
 	"os"
@@ -31,46 +29,6 @@ import (
 	lecho "github.com/ziflex/lecho"
 )
 
-func closeMongo(ctx context.Context, client *mongo.Client, cancel context.CancelFunc) {
-	log.Info().Msg("Closing Mongo Conection")
-	defer cancel()
-	defer func() {
-		if err := client.Disconnect(ctx); err != nil {
-			panic(err)
-		}
-	}()
-}
-
-// This is a user defined method that returns
-// a mongo.Client, context.Context,
-// context.CancelFunc and error.
-// mongo.Client will be used for further database
-// operation. context.Context will be used set
-// deadlines for process. context.CancelFunc will
-// be used to cancel context and resource
-// associated with it.
-func connect(uri string) (context.Context, *mongo.Client, error) {
-	ctx := context.Background()
-	client, err := mongo.Connect(ctx, options.Client().ApplyURI(uri))
-	return ctx, client, err
-}
-
-// This is a user defined method that accepts
-// mongo.Client and context.Context
-// This method used to ping the mongoDB, return error if any.
-func ping(ctx context.Context, client *mongo.Client) error {
-
-	// mongo.Client has Ping to ping mongoDB, deadline of
-	// the Ping method will be determined by cxt
-	// Ping method return error if any occurred, then
-	// the error can be handled.
-	if err := client.Ping(ctx, readpref.Primary()); err != nil {
-		log.Error().Msg("Connection Unsuccessful")
-		return err
-	}
-	log.Info().Msg("connected successfully")
-	return nil
-}
 func init() {
 	path, err := os.Getwd()
 	if err != nil {
@@ -209,7 +167,6 @@ func main() {
 		}
 
 	} else if dbType == "mongo" {
-		ctx := context.Background()
 		MongoCS := viper.GetString("MongoCS")
 		if MongoCS == "" {
 			log.Error().Msg("Configuration Error: MongoDB Connection String address not available")
@@ -226,11 +183,11 @@ func main() {
 
 		}
 		var err error
-		ctx, clientMongo, err = connect(MongoCS)
+		ctx, clientMongo, err = deviceMongoRepository.Connect(MongoCS)
 		if err != nil {
 			panic(err)
 		}
-		ping(ctx, clientMongo)
+		deviceMongoRepository.Ping(ctx, clientMongo)
 		deviceRepository = deviceMongoRepository.NewDeviceRepository(ctx, clientMongo, DeviceCollection, MongoDB)
 		if err != nil {
 			log.Fatal().Err(err).Msg("Could not create data operations client ")

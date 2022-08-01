@@ -28,7 +28,7 @@ func getDeviceDetails(ctx context.Context, client *mongo.Client, db string, coll
 	return
 }
 
-func (d *deviceRepository) GetAllPublicKeysForDevice(ctx context.Context, deviceId string) (model.Device, error) {
+func (d *deviceRepository) GetAllPublicKeysForDevice(_ context.Context, deviceId string) (model.Device, error) {
 
 	mDevices, err := getDeviceDetails(d.ctx, d.client, d.database, d.collection, deviceId)
 
