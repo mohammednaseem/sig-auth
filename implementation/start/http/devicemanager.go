@@ -6,7 +6,7 @@ import (
 )
 
 type ResponseError struct {
-	Message interface{}
+	Message string
 }
 
 type deviceHandler struct {

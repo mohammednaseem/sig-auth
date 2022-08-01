@@ -2,26 +2,20 @@ package usecase
 
 import (
 	"errors"
-	"fmt"
-	"strings"
-
 	"github.com/device-auth/model"
 	jwt "github.com/golang-jwt/jwt"
+	"github.com/rs/zerolog/log"
+	"strings"
 )
 
 // Verify a JWT token using an RSA public key
 func VerifyJWT(token string, mdevice model.Device, algorithm string) (bool, error) {
 	var publicCerts []string
-	if len(strings.TrimSpace(mdevice.Cerificate1)) != 0 {
-		publicCerts = append(publicCerts, mdevice.Cerificate1)
+	for _, element := range mdevice.Credentials {
+		if len(strings.TrimSpace(element.PublicKey.Key)) != 0 {
+			publicCerts = append(publicCerts, element.PublicKey.Key)
+		}
 	}
-	if len(strings.TrimSpace(mdevice.Cerificate2)) != 0 {
-		publicCerts = append(publicCerts, mdevice.Cerificate2)
-	}
-	if len(strings.TrimSpace(mdevice.Cerificate3)) != 0 {
-		publicCerts = append(publicCerts, mdevice.Cerificate3)
-	}
-
 	// parse token // verify with all available public certificates
 	state, err := jwt.Parse(token, func(token *jwt.Token) (interface{}, error) {
 
@@ -30,7 +24,7 @@ func VerifyJWT(token string, mdevice model.Device, algorithm string) (bool, erro
 
 			if algorithm == "RS256" {
 				key, err := jwt.ParseRSAPublicKeyFromPEM([]byte(publicCert))
-				fmt.Println(err)
+				log.Error().Err(err).Msg("")
 				if err == nil {
 					return key, nil
 				}
@@ -48,7 +42,7 @@ func VerifyJWT(token string, mdevice model.Device, algorithm string) (bool, erro
 		return false, err
 	}
 	if !state.Valid {
-		fmt.Println("invalid jwt token")
+		log.Error().Err(err).Msg("invalid jwt token")
 		return false, errors.New("invalid jwt token")
 	}
 	return true, nil
@@ -58,7 +52,7 @@ func IdentifyAndVerifyJWT(token string, mDevice model.Device) (bool, error) {
 	signingMethod := ""
 
 	// parse token
-	_, err := jwt.Parse(token, func(token *jwt.Token) (interface{}, error) {
+	jwt.Parse(token, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodECDSA); ok {
 			signingMethod = "ES256"
 		} else if _, ok := token.Method.(*jwt.SigningMethodRSA); ok {
@@ -68,9 +62,10 @@ func IdentifyAndVerifyJWT(token string, mDevice model.Device) (bool, error) {
 		}
 		return true, nil
 	})
+
 	boolVal, err := VerifyJWT(token, mDevice, signingMethod)
 	if !boolVal {
-		fmt.Println(err)
+		log.Error().Err(err).Msg("")
 		return false, err
 	}
 	return true, nil

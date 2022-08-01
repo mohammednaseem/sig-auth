@@ -1,14 +1,18 @@
 package model
 
+import "google.golang.org/api/cloudiot/v1"
+
 type Device struct {
-	DeviceId    string   `json:"deviceid" validate:"required"`
-	Name        string   `json:"name" validate:"required"`
-	Password    string   `json:"password"`
-	Cerificate1 string   `json:"cerificate1"`
-	Cerificate2 string   `json:"cerificate2"`
-	Cerificate3 string   `json:"cerificate3"`
-	Project     string   `json:"Project"`
-	Region      string   `json:"Region"`
-	Created_On  string   `json:"created_on"`
-	PublicKey   []string `json:"key" validate:"required"`
+	Project     string                       `json:"project" validate:"required"`
+	Parent      string                       `json:"parent" validate:"required"`
+	NumId       string                       `json:"numId" validate:""`
+	Region      string                       `json:"region" validate:"required"`
+	Registry    string                       `json:"registry" validate:"required"`
+	Id          string                       `json:"id" validate:"required"`
+	Name        string                       `json:"name" validate:"required"`
+	Credentials []*cloudiot.DeviceCredential `json:"credentials" validate:"required"`
+	LogLevel    string                       `json:"logLevel"  validate:""`
+	Blocked     bool                         `json:"blocked"  validate:""`
+	Metadata    map[string]string            `json:"metadata"  validate:""`
+	CreatedOn   string                       `json:"createdOn"  validate:""`
 }

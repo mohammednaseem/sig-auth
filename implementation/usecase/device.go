@@ -2,7 +2,8 @@ package usecase
 
 import (
 	"context"
-	"log"
+
+	"github.com/rs/zerolog/log"
 
 	"github.com/device-auth/model"
 )
@@ -13,7 +14,7 @@ func (d *dDeviceUsecase) GetAllPublicKeysForDevice(ctx context.Context, deviceId
 
 	mDevice, err := d.deviceRepo.GetAllPublicKeysForDevice(c, deviceId)
 	if err != nil {
-		log.Fatal(err)
+		log.Error().Err(err).Msg("")
 		return model.Device{}, err
 	}
 	return mDevice, err
@@ -25,10 +26,9 @@ func (d *dDeviceUsecase) IsValidCertificate(ctx context.Context, deviceId string
 
 	mDevice, err := d.GetAllPublicKeysForDevice(c, deviceId)
 	if err != nil {
-		log.Fatal(err)
+		log.Error().Err(err).Msg("")
 		return false, err
 	}
-
 	isValidDevice, err := IdentifyAndVerifyJWT(token, mDevice)
 
 	return isValidDevice, err

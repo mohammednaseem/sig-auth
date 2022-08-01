@@ -1,7 +1,7 @@
 package helper
 
 import (
-	"fmt"
+	"github.com/rs/zerolog/log"
 	"os"
 )
 
@@ -16,13 +16,13 @@ func fileExists(name string) (bool, error) {
 func DeleteFileIfExists(fileName string) error {
 	isFileExisting, err := fileExists(fileName)
 	if err != nil {
-		fmt.Println(err)
+		log.Error().Err(err).Msg("")
 		return err
 	}
 	if isFileExisting {
 		err = os.Remove(fileName)
 		if err != nil {
-			fmt.Println(err)
+			log.Error().Err(err).Msg("")
 			return err
 		}
 	}
