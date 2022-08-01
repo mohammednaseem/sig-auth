@@ -146,15 +146,15 @@ func main() {
 		deviceRepository = devicePostgresRepository.NewDeviceRepository(dbConn)
 	} else if dbType == "bigtable" {
 		ctx := context.Background()
-		bProject := viper.GetString("bigProject")
+		bProject := viper.GetString("ENV_BIG_PROJECT")
 		if bProject == "" {
 			log.Fatal().Msg("No bigTable Project Specified in Config")
 		}
-		bInstance := viper.GetString("bigInstance")
+		bInstance := viper.GetString("ENV_BIG_INSTANCE")
 		if bInstance == "" {
 			log.Fatal().Msg("No bigTable Instance Specified in Config")
 		}
-		bTable := viper.GetString("bTable")
+		bTable := viper.GetString("ENV_BIG_TABLE")
 		if bTable == "" {
 			log.Fatal().Msg("No bigTable Table Specified in Config")
 		}
@@ -167,17 +167,17 @@ func main() {
 		}
 
 	} else if dbType == "mongo" {
-		MongoCS := viper.GetString("MongoCS")
+		MongoCS := viper.GetString("ENV_MONGO_CS")
 		if MongoCS == "" {
 			log.Error().Msg("Configuration Error: MongoDB Connection String address not available")
 
 		}
-		MongoDB := viper.GetString("MongoDB")
+		MongoDB := viper.GetString("ENV_MONGO_DB")
 		if MongoDB == "" {
 			log.Error().Msg("Configuration Error: MongoDB Database String not available")
 
 		}
-		DeviceCollection := viper.GetString("MongoCollection")
+		DeviceCollection := viper.GetString("ENV_MONGO_COLLECTION")
 		if DeviceCollection == "" {
 			log.Error().Msg("Configuration Error: MongoDB Device Collection String not available")
 
