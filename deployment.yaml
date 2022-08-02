@@ -1,0 +1,40 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: device-manager
+  namespace: default
+  labels:
+    app: device-manager
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: device-manager
+  template:
+    metadata:
+      labels:
+        app: device-manager
+    spec:
+      containers:
+      - name: devicemngr
+        image: gcr.io/famous-palisade-356103/device-mngr:$REVISION_ID
+        imagePullPolicy: IfNotPresent
+        env:
+        - name: ENV_AUTH_SERVER
+          value: ":8091"
+        - name: ENV_DEBUG
+          value: "true"
+        - name: ENV_SERVICE_TYPE
+          value: "kore"
+        - name: ENV_MONGO_CS
+          value: "mongodb+srv://shaiz:12345@cluster0.ugy2c.mongodb.net/?retryWrites=true&w=majority"
+        - name: ENV_MONGO_DB
+          value: "test"
+        - name: ENV_REGISTRY_COLLECTION
+          value: "Reg"
+        - name: ENV_DEVICE_COLLECTION
+          value: "Dev"
+        - name: ENV_PUB_TOPIC
+          value: "test"
+  #    imagePullSecrets:
+   #     - name: topsecret

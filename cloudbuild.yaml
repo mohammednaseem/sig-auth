@@ -1,0 +1,48 @@
+steps:
+# Step 1
+- name: 'gcr.io/cloud-builders/docker'
+  entrypoint: 'bash'
+  args: [
+    '-c', 
+    'docker pull gcr.io/famous-palisade-356103/device-mngr:latest || exit 0'
+  ]
+# Step 2
+- name: gcr.io/cloud-builders/docker
+  args: [
+    'build', 
+    '-t', 
+    'gcr.io/famous-palisade-356103/device-mngr:$REVISION_ID',
+   # '-t',
+    #'gcr.io/famous-palisade-356103/device-mngr:latest',
+    '.'
+  ]
+#dir: 'my-app-vue'
+# Step 2.2
+- name: gcr.io/cloud-builders/docker
+  args: [
+    'push', 
+    'gcr.io/famous-palisade-356103/device-mngr:latest'
+  ]
+# Step 3
+- name: 'gcr.io/cloud-builders/kubectl'
+#args: ['apply', '-f', 'k8s/']
+  args: ['apply', '-f', 'deployment.yaml']
+  env:
+  - 'CLOUDSDK_COMPUTE_ZONE=asia-east1-a'
+  - 'CLOUDSDK_CONTAINER_CLUSTER=device-manager'
+# Step 4
+- name: 'gcr.io/cloud-builders/kubectl'
+  args: [
+    'set', 
+    'image', 
+    'deployment', 
+    'device-manager', 
+    'devicemngr=gcr.io/famous-palisade-356103/device-mngr:$REVISION_ID'
+  ]
+  env:
+  - 'CLOUDSDK_COMPUTE_ZONE=asia-east1-a'
+  - 'CLOUDSDK_CONTAINER_CLUSTER=device-manager'
+# Push the image to Google Container Registry with the latest tag
+images: [
+    'gcr.io/famous-palisade-356103/device-mngr:$REVISION_ID'
+  ]
