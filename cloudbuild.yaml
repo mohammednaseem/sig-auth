@@ -21,7 +21,7 @@ steps:
 - name: gcr.io/cloud-builders/docker
   args: [
     'push', 
-    'gcr.io/famous-palisade-356103/sign-auth:latest'
+    'gcr.io/famous-palisade-356103/sign-auth:$REVISION_ID'
   ]
 # Step 3
 - name: 'gcr.io/cloud-builders/kubectl'
