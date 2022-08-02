@@ -1,11 +1,11 @@
 steps:
 # Step 1
-- name: 'gcr.io/cloud-builders/docker'
-  entrypoint: 'bash'
-  args: [
-    '-c', 
-    'docker pull gcr.io/famous-palisade-356103/sign-auth:latest || exit 0'
-  ]
+#- name: 'gcr.io/cloud-builders/docker'
+  #entrypoint: 'bash'
+  #args: [
+    #'-c', 
+    #'docker pull gcr.io/famous-palisade-356103/sign-auth:latest || exit 0'
+  #]
 # Step 2
 - name: gcr.io/cloud-builders/docker
   args: [
