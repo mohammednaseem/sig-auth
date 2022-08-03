@@ -19,6 +19,7 @@ func getDeviceDetails(ctx context.Context, client *mongo.Client, db string, coll
 	err = queryOne(ctx, client, db, collection, filter).Decode(&mDevice)
 	if err != nil {
 		log.Error().Err(err).Msg("")
+		return
 	}
 	// print the count of affected documents
 	if mDevice.Id == "" {

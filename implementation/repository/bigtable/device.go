@@ -36,6 +36,7 @@ func (d *deviceRepository) GetAllPublicKeysForDevice(ctx context.Context, device
 	mDevices, err := getDeviceDetails(ctx, d.Conn, d.Table, query, deviceId)
 	if err != nil {
 		log.Fatal().Err(err).Msg("Error Fetching From Big Table")
+		return nil, err
 	}
 
 	return mDevices, nil
