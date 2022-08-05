@@ -20,7 +20,7 @@ func printRow(row bigtable.Row) {
 		}
 	}
 }
-func getDeviceDetails(ctx context.Context, db *bigtable.Client, table *bigtable.Table, query string, deviceId string) (mDevice model.Device, err error) {
+func getDeviceDetails(ctx context.Context, _ *bigtable.Client, table *bigtable.Table, query string, deviceId string) (mDevice model.Device, err error) {
 	log.Debug().Str("query", query).Msg("")
 	row, err := table.ReadRow(ctx, deviceId)
 	if err != nil {
