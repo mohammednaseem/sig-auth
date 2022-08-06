@@ -2,9 +2,13 @@ package usecase
 
 import (
 	"context"
+	"crypto/rand"
 	"encoding/json"
+	"errors"
 	"fmt"
+	"math/big"
 	"strings"
+	"time"
 
 	Service "github.com/device-auth/implementation/service"
 	"github.com/device-auth/model"
@@ -29,20 +33,32 @@ func GetDeviceData(deviceId string, tokenString string, algorithm string, topicI
 	//claims := jwt.MapClaims{}
 	//_, err := jwt.ParseWithClaims(tokenString, claims, nil)
 	//dev.Project = fmt.Sprintf("%v", claims["aud"])
-	dev.Name = deviceId
-	fmt.Sscanf(deviceId, "projects/%v/locations/%v/registries/%v/devices/%v", &dev.Project, &dev.Region, &dev.Registry, &dev.Id)
-	dev.Blocked = false
-	dev.Metadata = map[string]string{}
-	dev.LogLevel = "INFO"
-	PubStruct := model.PublishDeviceCreate{Operation: "POST", Entity: "Device", Data: dev, Path: "device/" + dev.Parent}
-	s, _ := json.MarshalIndent(dev, "", "\t")
-	fmt.Print(string(s))
-	msg, err := json.Marshal(PubStruct)
+	nBig, err := rand.Int(rand.Reader, big.NewInt(999999999999999999))
 	if err != nil {
+		log.Error().Msg("Random Generator Failed")
+		return model.DeviceCreate{}, err
+	}
+	randNum := nBig.Int64()
+	dev.NumId = fmt.Sprintf("%d", randNum)
+	dev.Name = deviceId
+	devInfo := strings.Split(deviceId, "/")
+	if len(devInfo) != 8 {
+		err := errors.New("Mqtt ClientId Unknown Format")
 		log.Error().Err(err).Msg("")
 		return model.DeviceCreate{}, err
 	}
-	err = Service.Publish(dev.Project, topicId, msg)
+	dev.CreatedOn = time.Now().String()
+
+	dev.Project = devInfo[1]
+	dev.Region = devInfo[3]
+	dev.Registry = devInfo[5]
+	dev.Id = devInfo[7]
+	dev.Parent = fmt.Sprintf("projects/%s/locations/%s/registries/%s/devices", dev.Project, dev.Region, dev.Registry)
+	dev.Blocked = false
+	dev.Metadata = map[string]string{}
+	dev.LogLevel = "INFO"
+	s, _ := json.MarshalIndent(dev, "", "\t")
+	fmt.Print(string(s))
 
 	return dev, err
 }
@@ -64,15 +80,17 @@ func (d *dDeviceUsecase) CheckCredentials(ctx context.Context, input model.Devic
 		log.Error().Err(err).Msg("")
 		return false, err
 	}
-	dev, err := GetDeviceData(input.DeviceId, input.Token, algorithm, d.topicId)
-	if err != nil {
-		log.Error().Err(err).Msg("")
-		return false, err
-	}
-	err = CreateDevicePublish(d.topicId, dev)
-	if err != nil {
-		log.Error().Err(err).Msg("")
-		return false, err
+	if input.Bootstrap != "" {
+		dev, err := GetDeviceData(input.DeviceId, input.Token, algorithm, d.topicId)
+		if err != nil {
+			log.Error().Err(err).Msg("")
+			return false, err
+		}
+		err = CreateDevicePublish(d.topicId, dev)
+		if err != nil {
+			log.Error().Err(err).Msg("")
+			return false, err
+		}
 	}
 	return boolVal, err
 }

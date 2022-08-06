@@ -20,9 +20,9 @@
     "ENV_BIG_INSTANCE":"dev",
     "ENV_BIG_PROJECT":"dev",
     "ENV_MONGO_CS": "mongodb+srv://shaiz:12345@cluster0.ugy2c.mongodb.net/?retryWrites=true&w=majority",
-    "ENV_MONGO_DB": "test",
-    "ENV_MONGO_COLLECTION": "Data",
-    "ENV_TOPIC_ID":"test2"
+    "ENV_MONGO_DB": "test1",
+    "ENV_MONGO_COLLECTION": "Dev",
+    "ENV_TOPIC_ID":"local"
 
 }
   

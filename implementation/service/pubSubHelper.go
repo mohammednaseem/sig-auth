@@ -11,7 +11,7 @@ import (
 func Publish(_ string, topicID string, msg []byte) error {
 	ctx := context.Background()
 	//client, err := pubsub.NewClient(ctx, projectID)
-	client, err := pubsub.NewClient(ctx, "customer1-data-plane")
+	client, err := pubsub.NewClient(ctx, "my-iot-356305")
 	if err != nil {
 		return fmt.Errorf("pubsub: NewClient: %v", err)
 	}

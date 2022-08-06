@@ -12,7 +12,7 @@ import (
 func getDeviceDetails(ctx context.Context, client *mongo.Client, db string, collection string, deviceId string) (mDevice model.Device, err error) {
 	Ping(ctx, client)
 	var filter interface{} = bson.D{
-		{Key: "id", Value: bson.D{{Key: "$eq", Value: deviceId}}},
+		{Key: "name", Value: bson.D{{Key: "$eq", Value: deviceId}}},
 	}
 
 	// Returns result of deletion and error

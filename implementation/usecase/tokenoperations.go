@@ -21,15 +21,15 @@ func VerifyJWT(token string, Certs []string) (bool, error, string) {
 		}
 		var err error
 		for _, publicCert := range Certs {
-			print(publicCert)
+
 			if algorithm == "RS256" {
-				key, err := jwt.ParseRSAPublicKeyFromPEM([]byte(test))
+				key, err := jwt.ParseRSAPublicKeyFromPEM([]byte(publicCert))
 				log.Error().Err(err).Msg("")
 				if err == nil {
 					return key, nil
 				}
 			} else { //EC
-				key, err := jwt.ParseECPublicKeyFromPEM([]byte(test))
+				key, err := jwt.ParseECPublicKeyFromPEM([]byte(publicCert))
 				if err == nil {
 					return key, nil
 				}
