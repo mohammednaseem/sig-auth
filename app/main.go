@@ -7,10 +7,10 @@ import (
 	"fmt"
 
 	bigtable "cloud.google.com/go/bigtable"
+	deviceDelivery "github.com/device-auth/implementation/_start/http"
 	deviceBigTableRepository "github.com/device-auth/implementation/repository/bigtable"
 	deviceMongoRepository "github.com/device-auth/implementation/repository/mongo"
 	devicePostgresRepository "github.com/device-auth/implementation/repository/postgresql"
-	deviceDelivery "github.com/device-auth/implementation/start/http"
 	deviceUsecase "github.com/device-auth/implementation/usecase"
 	deviceModel "github.com/device-auth/model"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -92,10 +92,15 @@ func main() {
 	if dbType == "" {
 		log.Error().Msg("Configuration Error: dbType not available")
 	}
+	topicId := viper.GetString("ENV_TOPIC_ID")
+	if topicId == "" {
+		log.Fatal().Msg("Topic Id not found")
+	}
 	var deviceRepository deviceModel.IDeviceRepository
 	var clientMongo *mongo.Client
 	var cancel context.CancelFunc
 	var ctx context.Context
+
 	if dbType == "psql" {
 		log.Print("psql")
 		dbHost := viper.GetString("ENV_DBHOST")
@@ -117,10 +122,6 @@ func main() {
 		dbName := viper.GetString("DB_NAME")
 		if dbName == "" {
 			dbName = viper.GetString(`db_name`)
-		}
-		topicId := viper.GetString("ENV_TOPIC_ID")
-		if topicId == "" {
-			log.Fatal().Msg("Topic Id not found")
 		}
 
 		// postgresql
@@ -199,7 +200,7 @@ func main() {
 	} else {
 		log.Fatal().Msg("Db Type Not Found")
 	}
-	deviceUseCase := deviceUsecase.NewDeviceUsecase(deviceRepository, timeoutContext)
+	deviceUseCase := deviceUsecase.NewDeviceUsecase(deviceRepository, timeoutContext, topicId)
 	deviceDelivery.NewDeviceHandler(e, deviceUseCase)
 	defer func() {
 		if dbType == "kore" {

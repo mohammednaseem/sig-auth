@@ -3,13 +3,11 @@ package usecase
 import (
 	"context"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"strings"
 
 	Service "github.com/device-auth/implementation/service"
 	"github.com/device-auth/model"
-	jwt "github.com/golang-jwt/jwt"
 	"github.com/rs/zerolog/log"
 )
 
@@ -26,36 +24,32 @@ func CreateDevicePublish(topicId string, dev model.DeviceCreate) error {
 
 	return err
 }
-func GetDeviceData(deviceId string, tokenString string) (model.DeviceCreate, error) {
-	var signingMethod string
+func GetDeviceData(deviceId string, tokenString string, algorithm string, topicId string) (model.DeviceCreate, error) {
 	var dev model.DeviceCreate
-	claims := jwt.MapClaims{}
-	_, err := jwt.ParseWithClaims(tokenString, claims, func(token *jwt.Token) (interface{}, error) {
-		if _, ok := token.Method.(*jwt.SigningMethodECDSA); ok {
-			signingMethod = "ES256"
-		} else if _, ok := token.Method.(*jwt.SigningMethodRSA); ok {
-			signingMethod = "RS256"
-		} else if signingMethod == "" {
-			return false, errors.New("unknown signing method")
-		}
-		return true, nil
-	})
-	dev.Project = fmt.Sprintf("%v", claims["aud"])
+	//claims := jwt.MapClaims{}
+	//_, err := jwt.ParseWithClaims(tokenString, claims, nil)
+	//dev.Project = fmt.Sprintf("%v", claims["aud"])
+	dev.Name = deviceId
+	fmt.Sscanf(deviceId, "projects/%v/locations/%v/registries/%v/devices/%v", &dev.Project, &dev.Region, &dev.Registry, &dev.Id)
+	dev.Blocked = false
+	dev.Metadata = map[string]string{}
+	dev.LogLevel = "INFO"
 	PubStruct := model.PublishDeviceCreate{Operation: "POST", Entity: "Device", Data: dev, Path: "device/" + dev.Parent}
-
+	s, _ := json.MarshalIndent(dev, "", "\t")
+	fmt.Print(string(s))
 	msg, err := json.Marshal(PubStruct)
 	if err != nil {
 		log.Error().Err(err).Msg("")
-		return err
+		return model.DeviceCreate{}, err
 	}
 	err = Service.Publish(dev.Project, topicId, msg)
 
-	return err
+	return dev, err
 }
 func (d *dDeviceUsecase) CheckCredentials(ctx context.Context, input model.DeviceAndToken) (bool, error) {
 	var Certs []string
 	var err error
-	if input.Bootstrap != "" {
+	if input.Bootstrap == "" {
 		Certs, err = d.GetCertificateFromDb(ctx, input.DeviceId, input.Token)
 		if err != nil {
 			log.Error().Err(err).Msg("")
@@ -65,12 +59,16 @@ func (d *dDeviceUsecase) CheckCredentials(ctx context.Context, input model.Devic
 		Certs = append(Certs, input.Bootstrap)
 	}
 
-	boolVal, err := d.IsCertificateKeyMapped(ctx, Certs, input.Token)
+	boolVal, err, algorithm := d.IsCertificateKeyMapped(ctx, Certs, input.Token)
 	if err != nil {
 		log.Error().Err(err).Msg("")
 		return false, err
 	}
-	err = GetDeviceData(input.DeviceId, input.Token)
+	dev, err := GetDeviceData(input.DeviceId, input.Token, algorithm, d.topicId)
+	if err != nil {
+		log.Error().Err(err).Msg("")
+		return false, err
+	}
 	err = CreateDevicePublish(d.topicId, dev)
 	if err != nil {
 		log.Error().Err(err).Msg("")
@@ -109,9 +107,9 @@ func (d *dDeviceUsecase) GetCertificateFromDb(ctx context.Context, deviceId stri
 
 	return Certs, err
 }
-func (d *dDeviceUsecase) IsCertificateKeyMapped(ctx context.Context, certificate []string, token string) (bool, error) {
+func (d *dDeviceUsecase) IsCertificateKeyMapped(ctx context.Context, certificate []string, token string) (bool, error, string) {
 
-	isValidDevice, err := IdentifyAndVerifyJWT(token, certificate)
+	isValidDevice, err, algorithm := IdentifyAndVerifyJWT(token, certificate)
 
-	return isValidDevice, err
+	return isValidDevice, err, algorithm
 }
