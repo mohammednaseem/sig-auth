@@ -118,6 +118,10 @@ func main() {
 		if dbName == "" {
 			dbName = viper.GetString(`db_name`)
 		}
+		topicId := viper.GetString("ENV_TOPIC_ID")
+		if topicId == "" {
+			log.Fatal().Msg("Topic Id not found")
+		}
 
 		// postgresql
 		dbPortInt, _ := strconv.Atoi(dbPort)

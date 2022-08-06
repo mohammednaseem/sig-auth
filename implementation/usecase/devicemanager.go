@@ -9,11 +9,13 @@ import (
 type dDeviceUsecase struct {
 	deviceRepo     model.IDeviceRepository
 	contextTimeout time.Duration
+	topicId        string
 }
 
-func NewDeviceUsecase(d model.IDeviceRepository, timeout time.Duration) model.IDeviceUsecase {
+func NewDeviceUsecase(d model.IDeviceRepository, timeout time.Duration, topicId string) model.IDeviceUsecase {
 	return &dDeviceUsecase{
 		deviceRepo:     d,
 		contextTimeout: timeout,
+		topicId:        topicId,
 	}
 }

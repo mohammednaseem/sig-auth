@@ -2,25 +2,18 @@ package usecase
 
 import (
 	"errors"
-	"github.com/device-auth/model"
 	jwt "github.com/golang-jwt/jwt"
 	"github.com/rs/zerolog/log"
-	"strings"
 )
 
 // Verify a JWT token using an RSA public key
-func VerifyJWT(token string, mdevice model.Device, algorithm string) (bool, error) {
-	var publicCerts []string
-	for _, element := range mdevice.Credentials {
-		if len(strings.TrimSpace(element.PublicKey.Key)) != 0 {
-			publicCerts = append(publicCerts, element.PublicKey.Key)
-		}
-	}
+func VerifyJWT(token string, Certs []string, algorithm string) (bool, error) {
+
 	// parse token // verify with all available public certificates
 	state, err := jwt.Parse(token, func(token *jwt.Token) (interface{}, error) {
 
 		var err error
-		for _, publicCert := range publicCerts {
+		for _, publicCert := range Certs {
 
 			if algorithm == "RS256" {
 				key, err := jwt.ParseRSAPublicKeyFromPEM([]byte(publicCert))
@@ -48,7 +41,7 @@ func VerifyJWT(token string, mdevice model.Device, algorithm string) (bool, erro
 	return true, nil
 }
 
-func IdentifyAndVerifyJWT(token string, mDevice model.Device) (bool, error) {
+func IdentifyAndVerifyJWT(token string, Certs []string) (bool, error) {
 	signingMethod := ""
 
 	// parse token
@@ -63,7 +56,7 @@ func IdentifyAndVerifyJWT(token string, mDevice model.Device) (bool, error) {
 		return true, nil
 	})
 
-	boolVal, err := VerifyJWT(token, mDevice, signingMethod)
+	boolVal, err := VerifyJWT(token, Certs, signingMethod)
 	if !boolVal {
 		log.Error().Err(err).Msg("")
 		return false, err
