@@ -51,6 +51,7 @@ func (d *deviceHandler) authN(c echo.Context) error {
 		r := ResponseError{Message: "Data not good"}
 		return c.JSON(http.StatusBadRequest, r)
 	}
+	dt.Bootstrap = strings.ReplaceAll(dt.Bootstrap, "\\n", "\n")
 	boolVal, err := d.dUsecase.CheckCredentials(ctx, *dt)
 	if !boolVal {
 		return c.JSON(http.StatusForbidden, err)

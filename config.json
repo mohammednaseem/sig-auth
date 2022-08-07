@@ -22,7 +22,7 @@
     "ENV_MONGO_CS": "mongodb+srv://shaiz:12345@cluster0.ugy2c.mongodb.net/?retryWrites=true&w=majority",
     "ENV_MONGO_DB": "test1",
     "ENV_MONGO_COLLECTION": "Dev",
-    "ENV_TOPIC_ID":"test",
+    "ENV_TOPIC_ID":"test2",
     "ENV_PUB_PROJECT":"famous-palisade-356103"
 
 
