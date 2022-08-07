@@ -8,10 +8,10 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-func Publish(_ string, topicID string, msg []byte) error {
+func Publish(projectId string, topicID string, msg []byte) error {
 	ctx := context.Background()
 	//client, err := pubsub.NewClient(ctx, projectID)
-	client, err := pubsub.NewClient(ctx, "my-iot-356305")
+	client, err := pubsub.NewClient(ctx, projectId)
 	if err != nil {
 		return fmt.Errorf("pubsub: NewClient: %v", err)
 	}

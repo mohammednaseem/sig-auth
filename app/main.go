@@ -96,6 +96,10 @@ func main() {
 	if topicId == "" {
 		log.Fatal().Msg("Topic Id not found")
 	}
+	pubProject := viper.GetString("ENV_PUB_PROJECT")
+	if topicId == "" {
+		log.Fatal().Msg("Pub Project Not Found")
+	}
 	var deviceRepository deviceModel.IDeviceRepository
 	var clientMongo *mongo.Client
 	var cancel context.CancelFunc
@@ -200,7 +204,7 @@ func main() {
 	} else {
 		log.Fatal().Msg("Db Type Not Found")
 	}
-	deviceUseCase := deviceUsecase.NewDeviceUsecase(deviceRepository, timeoutContext, topicId)
+	deviceUseCase := deviceUsecase.NewDeviceUsecase(deviceRepository, timeoutContext, topicId, pubProject)
 	deviceDelivery.NewDeviceHandler(e, deviceUseCase)
 	defer func() {
 		if dbType == "kore" {

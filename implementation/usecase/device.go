@@ -14,9 +14,10 @@ import (
 	Service "github.com/device-auth/implementation/service"
 	"github.com/device-auth/model"
 	"github.com/rs/zerolog/log"
+	"google.golang.org/api/cloudiot/v1"
 )
 
-func CreateDevicePublish(topicId string, dev model.DeviceCreate) error {
+func CreateDevicePublish(topicId string, dev model.DeviceCreate, projectId string) error {
 
 	PubStruct := model.PublishDeviceCreate{Operation: "POST", Entity: "Device", Data: dev, Path: "device/" + dev.Parent}
 
@@ -25,11 +26,11 @@ func CreateDevicePublish(topicId string, dev model.DeviceCreate) error {
 		log.Error().Err(err).Msg("")
 		return err
 	}
-	err = Service.Publish(dev.Project, topicId, msg)
+	err = Service.Publish(projectId, topicId, msg)
 
 	return err
 }
-func GetDeviceData(deviceId string, tokenString string, algorithm string, topicId string) (model.DeviceCreate, error) {
+func GetDeviceData(deviceId string, tokenString string, algorithm string, certificate string) (model.DeviceCreate, error) {
 	var dev model.DeviceCreate
 	//claims := jwt.MapClaims{}
 	//_, err := jwt.ParseWithClaims(tokenString, claims, nil)
@@ -58,6 +59,14 @@ func GetDeviceData(deviceId string, tokenString string, algorithm string, topicI
 	dev.Blocked = false
 	dev.Metadata = map[string]string{}
 	dev.LogLevel = "INFO"
+	var credential cloudiot.DeviceCredential = cloudiot.DeviceCredential{}
+	fmt.Print(credential)
+	credential.PublicKey = &cloudiot.PublicKeyCredential{}
+	if algorithm == "RS256" {
+		credential.PublicKey.Format = "RSA_X509_PEM"
+	}
+	credential.PublicKey.Key = certificate
+	dev.Credentials = append(dev.Credentials, &credential)
 	s, _ := json.MarshalIndent(dev, "", "\t")
 	fmt.Print(string(s))
 
@@ -73,7 +82,7 @@ func (d *dDeviceUsecase) CheckCredentials(ctx context.Context, input model.Devic
 		zeroTouch = false
 	}
 	if !zeroTouch {
-		Certs, err = d.GetCertificateFromDb(ctx, input.DeviceId, input.Token)
+		Certs, err = d.GetCertificateFromDb(ctx, input.DeviceId)
 		if err != nil {
 			log.Error().Err(err).Msg("")
 			return false, err
@@ -93,12 +102,12 @@ func (d *dDeviceUsecase) CheckCredentials(ctx context.Context, input model.Devic
 	}
 	log.Info().Msg("Token Verified")
 	if zeroTouch {
-		dev, err := GetDeviceData(input.DeviceId, input.Token, algorithm, d.topicId)
+		dev, err := GetDeviceData(input.DeviceId, input.Token, algorithm, input.Bootstrap)
 		if err != nil {
 			log.Error().Err(err).Msg("")
 			return false, err
 		}
-		err = CreateDevicePublish(d.topicId, dev)
+		err = CreateDevicePublish(d.topicId, dev, d.projectId)
 		if err != nil {
 			log.Error().Err(err).Msg("")
 			return false, err
@@ -118,7 +127,7 @@ func (d *dDeviceUsecase) GetAllPublicKeysForDevice(ctx context.Context, deviceId
 	return mDevice, err
 }
 
-func (d *dDeviceUsecase) GetCertificateFromDb(ctx context.Context, deviceId string, token string) ([]string, error) {
+func (d *dDeviceUsecase) GetCertificateFromDb(ctx context.Context, deviceId string) ([]string, error) {
 	c, cancel := context.WithTimeout(ctx, d.contextTimeout)
 	defer cancel()
 
@@ -137,7 +146,7 @@ func (d *dDeviceUsecase) GetCertificateFromDb(ctx context.Context, deviceId stri
 
 	return Certs, err
 }
-func (d *dDeviceUsecase) IsCertificateKeyMapped(ctx context.Context, certificate []string, token string) (bool, error, string) {
+func (*dDeviceUsecase) IsCertificateKeyMapped(_ context.Context, certificate []string, token string) (bool, error, string) {
 
 	isValidDevice, err, algorithm := IdentifyAndVerifyJWT(token, certificate)
 
