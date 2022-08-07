@@ -4,6 +4,7 @@ import (
 	"context"
 	"crypto/rand"
 	"encoding/json"
+	"encoding/pem"
 	"errors"
 	"fmt"
 	"math/big"
@@ -43,7 +44,7 @@ func GetDeviceData(deviceId string, tokenString string, algorithm string, topicI
 	dev.Name = deviceId
 	devInfo := strings.Split(deviceId, "/")
 	if len(devInfo) != 8 {
-		err := errors.New("Mqtt ClientId Unknown Format")
+		err := errors.New("mqtt clientId unknown format")
 		log.Error().Err(err).Msg("")
 		return model.DeviceCreate{}, err
 	}
@@ -65,7 +66,13 @@ func GetDeviceData(deviceId string, tokenString string, algorithm string, topicI
 func (d *dDeviceUsecase) CheckCredentials(ctx context.Context, input model.DeviceAndToken) (bool, error) {
 	var Certs []string
 	var err error
-	if input.Bootstrap == "" {
+	var zeroTouch bool = true
+	block, _ := pem.Decode([]byte(input.Bootstrap))
+	if block == nil {
+		log.Info().Msg("Bootstrap Certificate Invalid")
+		zeroTouch = false
+	}
+	if !zeroTouch {
 		Certs, err = d.GetCertificateFromDb(ctx, input.DeviceId, input.Token)
 		if err != nil {
 			log.Error().Err(err).Msg("")
@@ -74,13 +81,18 @@ func (d *dDeviceUsecase) CheckCredentials(ctx context.Context, input model.Devic
 	} else {
 		Certs = append(Certs, input.Bootstrap)
 	}
-
+	if len(Certs) == 0 {
+		log.Error().Msg("Certificates Not Present For Check")
+		return false, errors.New("certificates not present for check")
+	}
 	boolVal, err, algorithm := d.IsCertificateKeyMapped(ctx, Certs, input.Token)
+
 	if err != nil {
 		log.Error().Err(err).Msg("")
 		return false, err
 	}
-	if input.Bootstrap != "" {
+	log.Info().Msg("Token Verified")
+	if zeroTouch {
 		dev, err := GetDeviceData(input.DeviceId, input.Token, algorithm, d.topicId)
 		if err != nil {
 			log.Error().Err(err).Msg("")
