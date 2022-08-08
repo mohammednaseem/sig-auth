@@ -8,16 +8,18 @@ import (
 )
 
 type deviceRepository struct {
-	client     *mongo.Client
-	collection string
-	database   string
-	ctx        context.Context
+	client      *mongo.Client
+	rcollection string
+	dcollection string
+	database    string
+	ctx         context.Context
 }
 
-func NewDeviceRepository(ctx context.Context, conn *mongo.Client, collection string, database string) model.IDeviceRepository {
+func NewDeviceRepository(ctx context.Context, conn *mongo.Client, dcollection string, rcollection string, database string) model.IDeviceRepository {
 	return &deviceRepository{
-		client:     conn,
-		collection: collection,
-		database:   database,
-		ctx:        ctx}
+		client:      conn,
+		rcollection: rcollection,
+		dcollection: dcollection,
+		database:    database,
+		ctx:         ctx}
 }

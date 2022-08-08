@@ -186,9 +186,14 @@ func main() {
 			log.Error().Msg("Configuration Error: MongoDB Database String not available")
 
 		}
-		DeviceCollection := viper.GetString("ENV_MONGO_COLLECTION")
+		DeviceCollection := viper.GetString("ENV_MONGO_DCOLLECTION")
 		if DeviceCollection == "" {
 			log.Error().Msg("Configuration Error: MongoDB Device Collection String not available")
+
+		}
+		RegistryCollection := viper.GetString("ENV_MONGO_RCOLLECTION")
+		if RegistryCollection == "" {
+			log.Error().Msg("Configuration Error: MongoDB Registry Collection String not available")
 
 		}
 		var err error
@@ -197,7 +202,7 @@ func main() {
 			panic(err)
 		}
 		deviceMongoRepository.Ping(ctx, clientMongo)
-		deviceRepository = deviceMongoRepository.NewDeviceRepository(ctx, clientMongo, DeviceCollection, MongoDB)
+		deviceRepository = deviceMongoRepository.NewDeviceRepository(ctx, clientMongo, DeviceCollection, RegistryCollection, MongoDB)
 		if err != nil {
 			log.Fatal().Err(err).Msg("Could not create data operations client ")
 		}

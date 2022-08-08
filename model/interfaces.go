@@ -15,4 +15,5 @@ type IDeviceUsecase interface {
 //jwt repo
 type IDeviceRepository interface {
 	GetAllPublicKeysForDevice(ctx context.Context, deviceId string) (Device, error)
+	CheckCaSign(ctx context.Context, registry string, region string, project string, bootstrap string) (bool, error)
 }

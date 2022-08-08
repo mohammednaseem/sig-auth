@@ -41,3 +41,6 @@ func (d *deviceRepository) GetAllPublicKeysForDevice(ctx context.Context, device
 
 	return mDevices, nil
 }
+func (d *deviceRepository) CheckCaSign(_ context.Context, _ string, _ string, _ string, _ string) (bool, error) {
+	return false, nil
+}

@@ -30,7 +30,7 @@ func CreateDevicePublish(topicId string, dev model.DeviceCreate, projectId strin
 
 	return err
 }
-func GetDeviceData(deviceId string, tokenString string, algorithm string, certificate string) (model.DeviceCreate, error) {
+func (d *dDeviceUsecase) GetDeviceData(ctx context.Context, deviceId string, tokenString string, algorithm string, certificate string) (model.DeviceCreate, error) {
 	var dev model.DeviceCreate
 	//claims := jwt.MapClaims{}
 	//_, err := jwt.ParseWithClaims(tokenString, claims, nil)
@@ -59,6 +59,13 @@ func GetDeviceData(deviceId string, tokenString string, algorithm string, certif
 	dev.Blocked = false
 	dev.Metadata = map[string]string{}
 	dev.LogLevel = "INFO"
+
+	boolVal, err := d.deviceRepo.CheckCaSign(ctx, dev.Registry, dev.Region, dev.Project, certificate)
+	if !boolVal {
+		err := errors.New("certificate verification failed")
+		log.Error().Err(err).Msg("")
+		return model.DeviceCreate{}, err
+	}
 	var credential cloudiot.DeviceCredential = cloudiot.DeviceCredential{}
 	fmt.Print(credential)
 	credential.PublicKey = &cloudiot.PublicKeyCredential{}
@@ -102,7 +109,7 @@ func (d *dDeviceUsecase) CheckCredentials(ctx context.Context, input model.Devic
 	}
 	log.Info().Msg("Token Verified")
 	if zeroTouch {
-		dev, err := GetDeviceData(input.DeviceId, input.Token, algorithm, input.Bootstrap)
+		dev, err := d.GetDeviceData(ctx, input.DeviceId, input.Token, algorithm, input.Bootstrap)
 		if err != nil {
 			log.Error().Err(err).Msg("")
 			return false, err

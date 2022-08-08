@@ -42,3 +42,18 @@ type PublishDeviceCreate struct {
 	Path      string       `json:"path" validate:"required"`
 	Data      DeviceCreate `json:"data" validate:"required"`
 }
+type Registry struct {
+	Parent                   string                              `json:"parent" validate:"required"`
+	Project                  string                              `json:"project" validate:"required"`
+	Region                   string                              `json:"region" validate:"required"`
+	Id                       string                              `json:"id" validate:"required"`
+	Name                     string                              `json:"name" validate:"required"`
+	EventNotificationConfigs []*cloudiot.EventNotificationConfig `json:"eventNotificationConfigs" validate:"required"`
+	StateNotificationConfig  *cloudiot.StateNotificationConfig   `json:"stateNotificationConfig"  validate:""`
+	MqttConfig               cloudiot.MqttConfig                 `json:"mqttConfig"  validate:""`
+	HttpConfig               cloudiot.HttpConfig                 `json:"httpConfig"  validate:""`
+	LogLevel                 string                              `json:"logLevel"  validate:""`
+	CreatedOn                string                              `json:"createdOn"  validate:""`
+	Credentials              []*cloudiot.RegistryCredential      `json:"credentials"  validate:""`
+	Decomissioned            bool                                `json:"decomissioned"  validate:""`
+}
