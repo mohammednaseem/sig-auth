@@ -7,10 +7,10 @@ import (
 	"fmt"
 
 	bigtable "cloud.google.com/go/bigtable"
+	deviceDelivery "github.com/device-auth/implementation/_start/http"
 	deviceBigTableRepository "github.com/device-auth/implementation/repository/bigtable"
 	deviceMongoRepository "github.com/device-auth/implementation/repository/mongo"
 	devicePostgresRepository "github.com/device-auth/implementation/repository/postgresql"
-	deviceDelivery "github.com/device-auth/implementation/start/http"
 	deviceUsecase "github.com/device-auth/implementation/usecase"
 	deviceModel "github.com/device-auth/model"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -92,10 +92,19 @@ func main() {
 	if dbType == "" {
 		log.Error().Msg("Configuration Error: dbType not available")
 	}
+	topicId := viper.GetString("ENV_TOPIC_ID")
+	if topicId == "" {
+		log.Fatal().Msg("Topic Id not found")
+	}
+	pubProject := viper.GetString("ENV_PUB_PROJECT")
+	if topicId == "" {
+		log.Fatal().Msg("Pub Project Not Found")
+	}
 	var deviceRepository deviceModel.IDeviceRepository
 	var clientMongo *mongo.Client
 	var cancel context.CancelFunc
 	var ctx context.Context
+
 	if dbType == "psql" {
 		log.Print("psql")
 		dbHost := viper.GetString("ENV_DBHOST")
@@ -146,15 +155,15 @@ func main() {
 		deviceRepository = devicePostgresRepository.NewDeviceRepository(dbConn)
 	} else if dbType == "bigtable" {
 		ctx := context.Background()
-		bProject := viper.GetString("bigProject")
+		bProject := viper.GetString("ENV_BIG_PROJECT")
 		if bProject == "" {
 			log.Fatal().Msg("No bigTable Project Specified in Config")
 		}
-		bInstance := viper.GetString("bigInstance")
+		bInstance := viper.GetString("ENV_BIG_INSTANCE")
 		if bInstance == "" {
 			log.Fatal().Msg("No bigTable Instance Specified in Config")
 		}
-		bTable := viper.GetString("bTable")
+		bTable := viper.GetString("ENV_BIG_TABLE")
 		if bTable == "" {
 			log.Fatal().Msg("No bigTable Table Specified in Config")
 		}
@@ -167,19 +176,24 @@ func main() {
 		}
 
 	} else if dbType == "mongo" {
-		MongoCS := viper.GetString("MongoCS")
+		MongoCS := viper.GetString("ENV_MONGO_CS")
 		if MongoCS == "" {
 			log.Error().Msg("Configuration Error: MongoDB Connection String address not available")
 
 		}
-		MongoDB := viper.GetString("MongoDB")
+		MongoDB := viper.GetString("ENV_MONGO_DB")
 		if MongoDB == "" {
 			log.Error().Msg("Configuration Error: MongoDB Database String not available")
 
 		}
-		DeviceCollection := viper.GetString("MongoCollection")
+		DeviceCollection := viper.GetString("ENV_MONGO_DCOLLECTION")
 		if DeviceCollection == "" {
 			log.Error().Msg("Configuration Error: MongoDB Device Collection String not available")
+
+		}
+		RegistryCollection := viper.GetString("ENV_MONGO_RCOLLECTION")
+		if RegistryCollection == "" {
+			log.Error().Msg("Configuration Error: MongoDB Registry Collection String not available")
 
 		}
 		var err error
@@ -188,14 +202,14 @@ func main() {
 			panic(err)
 		}
 		deviceMongoRepository.Ping(ctx, clientMongo)
-		deviceRepository = deviceMongoRepository.NewDeviceRepository(ctx, clientMongo, DeviceCollection, MongoDB)
+		deviceRepository = deviceMongoRepository.NewDeviceRepository(ctx, clientMongo, DeviceCollection, RegistryCollection, MongoDB)
 		if err != nil {
 			log.Fatal().Err(err).Msg("Could not create data operations client ")
 		}
 	} else {
 		log.Fatal().Msg("Db Type Not Found")
 	}
-	deviceUseCase := deviceUsecase.NewDeviceUsecase(deviceRepository, timeoutContext)
+	deviceUseCase := deviceUsecase.NewDeviceUsecase(deviceRepository, timeoutContext, topicId, pubProject)
 	deviceDelivery.NewDeviceHandler(e, deviceUseCase)
 	defer func() {
 		if dbType == "kore" {

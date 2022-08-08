@@ -16,12 +16,16 @@
     "BUCKET_NAME": "koreohio",
     "AWS_REGION" : "us-east-2",
     "AWS_ACCESS_KEY_ID" : "AKIA5244VCYCCZJWF74L" ,
-    "bigTable":"test",
-    "bigInstance":"dev",
-    "bigProject":"dev",
-    "MongoCS": "mongodb+srv://shaiz:12345@cluster0.ugy2c.mongodb.net/?retryWrites=true&w=majority",
-    "MongoDB": "test",
-    "MongoCollection": "Data"
+    "ENV_BIG_TABLE":"test",
+    "ENV_BIG_INSTANCE":"dev",
+    "ENV_BIG_PROJECT":"dev",
+    "ENV_MONGO_CS": "mongodb+srv://shaiz:12345@cluster0.ugy2c.mongodb.net/?retryWrites=true&w=majority",
+    "ENV_MONGO_DB": "test1",
+    "ENV_MONGO_DCOLLECTION": "Dev",
+    "ENV_MONGO_RCOLLECTION": "Reg",
+    "ENV_TOPIC_ID":"test",
+    "ENV_PUB_PROJECT":"my-iot-356305"
+
 
 }
   

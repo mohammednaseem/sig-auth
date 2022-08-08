@@ -2,25 +2,25 @@ package usecase
 
 import (
 	"errors"
-	"github.com/device-auth/model"
+
 	jwt "github.com/golang-jwt/jwt"
 	"github.com/rs/zerolog/log"
-	"strings"
 )
 
 // Verify a JWT token using an RSA public key
-func VerifyJWT(token string, mdevice model.Device, algorithm string) (bool, error) {
-	var publicCerts []string
-	for _, element := range mdevice.Credentials {
-		if len(strings.TrimSpace(element.PublicKey.Key)) != 0 {
-			publicCerts = append(publicCerts, element.PublicKey.Key)
-		}
-	}
+func VerifyJWT(token string, Certs []string) (bool, string, error) {
+	var algorithm string
 	// parse token // verify with all available public certificates
 	state, err := jwt.Parse(token, func(token *jwt.Token) (interface{}, error) {
-
+		if _, ok := token.Method.(*jwt.SigningMethodECDSA); ok {
+			algorithm = "ES256"
+		} else if _, ok := token.Method.(*jwt.SigningMethodRSA); ok {
+			algorithm = "RS256"
+		} else if algorithm == "" {
+			return false, errors.New("unknown signing method")
+		}
 		var err error
-		for _, publicCert := range publicCerts {
+		for _, publicCert := range Certs {
 
 			if algorithm == "RS256" {
 				key, err := jwt.ParseRSAPublicKeyFromPEM([]byte(publicCert))
@@ -39,34 +39,21 @@ func VerifyJWT(token string, mdevice model.Device, algorithm string) (bool, erro
 		return err, nil
 	})
 	if err != nil {
-		return false, err
+		return false, "", err
 	}
 	if !state.Valid {
 		log.Error().Err(err).Msg("invalid jwt token")
-		return false, errors.New("invalid jwt token")
+		return false, "", errors.New("invalid jwt token")
 	}
-	return true, nil
+	return true, algorithm, nil
 }
 
-func IdentifyAndVerifyJWT(token string, mDevice model.Device) (bool, error) {
-	signingMethod := ""
+func IdentifyAndVerifyJWT(token string, Certs []string) (bool, string, error) {
 
-	// parse token
-	jwt.Parse(token, func(token *jwt.Token) (interface{}, error) {
-		if _, ok := token.Method.(*jwt.SigningMethodECDSA); ok {
-			signingMethod = "ES256"
-		} else if _, ok := token.Method.(*jwt.SigningMethodRSA); ok {
-			signingMethod = "RS256"
-		} else if signingMethod == "" {
-			return false, errors.New("unknown signing method")
-		}
-		return true, nil
-	})
-
-	boolVal, err := VerifyJWT(token, mDevice, signingMethod)
+	boolVal, algorithm, err := VerifyJWT(token, Certs)
 	if !boolVal {
 		log.Error().Err(err).Msg("")
-		return false, err
+		return false, "", err
 	}
-	return true, nil
+	return true, algorithm, nil
 }

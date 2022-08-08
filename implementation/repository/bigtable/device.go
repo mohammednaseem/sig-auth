@@ -20,7 +20,7 @@ func printRow(row bigtable.Row) {
 		}
 	}
 }
-func getDeviceDetails(ctx context.Context, db *bigtable.Client, table *bigtable.Table, query string, deviceId string) (mDevice model.Device, err error) {
+func getDeviceDetails(ctx context.Context, _ *bigtable.Client, table *bigtable.Table, query string, deviceId string) (mDevice model.Device, err error) {
 	log.Debug().Str("query", query).Msg("")
 	row, err := table.ReadRow(ctx, deviceId)
 	if err != nil {
@@ -36,7 +36,11 @@ func (d *deviceRepository) GetAllPublicKeysForDevice(ctx context.Context, device
 	mDevices, err := getDeviceDetails(ctx, d.Conn, d.Table, query, deviceId)
 	if err != nil {
 		log.Fatal().Err(err).Msg("Error Fetching From Big Table")
+		return model.Device{}, err
 	}
 
 	return mDevices, nil
+}
+func (*deviceRepository) CheckCaSign(_ context.Context, _ string, _ string, _ string, _ string) (bool, error) {
+	return false, nil
 }
