@@ -23,8 +23,8 @@
     "ENV_MONGO_DB": "test1",
     "ENV_MONGO_DCOLLECTION": "Dev",
     "ENV_MONGO_RCOLLECTION": "Reg",
-    "ENV_TOPIC_ID":"test2",
-    "ENV_PUB_PROJECT":"famous-palisade-356103"
+    "ENV_TOPIC_ID":"test",
+    "ENV_PUB_PROJECT":"my-iot-356305"
 
 
 }

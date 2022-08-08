@@ -51,6 +51,6 @@ func (d *deviceRepository) GetAllPublicKeysForDevice(_ context.Context, deviceId
 	}
 	return mDevices, nil
 }
-func (d *deviceRepository) CheckCaSign(_ context.Context, _ string, _ string, _ string, _ string) (bool, error) {
+func (*deviceRepository) CheckCaSign(_ context.Context, _ string, _ string, _ string, _ string) (bool, error) {
 	return false, nil
 }

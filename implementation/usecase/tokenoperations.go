@@ -8,7 +8,7 @@ import (
 )
 
 // Verify a JWT token using an RSA public key
-func VerifyJWT(token string, Certs []string) (bool, error, string) {
+func VerifyJWT(token string, Certs []string) (bool, string, error) {
 	var algorithm string
 	// parse token // verify with all available public certificates
 	state, err := jwt.Parse(token, func(token *jwt.Token) (interface{}, error) {
@@ -39,21 +39,21 @@ func VerifyJWT(token string, Certs []string) (bool, error, string) {
 		return err, nil
 	})
 	if err != nil {
-		return false, err, ""
+		return false, "", err
 	}
 	if !state.Valid {
 		log.Error().Err(err).Msg("invalid jwt token")
-		return false, errors.New("invalid jwt token"), ""
+		return false, "", errors.New("invalid jwt token")
 	}
-	return true, nil, algorithm
+	return true, algorithm, nil
 }
 
-func IdentifyAndVerifyJWT(token string, Certs []string) (bool, error, string) {
+func IdentifyAndVerifyJWT(token string, Certs []string) (bool, string, error) {
 
-	boolVal, err, algorithm := VerifyJWT(token, Certs)
+	boolVal, algorithm, err := VerifyJWT(token, Certs)
 	if !boolVal {
 		log.Error().Err(err).Msg("")
-		return false, err, ""
+		return false, "", err
 	}
-	return true, nil, algorithm
+	return true, algorithm, nil
 }

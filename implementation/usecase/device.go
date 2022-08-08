@@ -101,7 +101,7 @@ func (d *dDeviceUsecase) CheckCredentials(ctx context.Context, input model.Devic
 		log.Error().Msg("Certificates Not Present For Check")
 		return false, errors.New("certificates not present for check")
 	}
-	boolVal, err, algorithm := d.IsCertificateKeyMapped(ctx, Certs, input.Token)
+	boolVal, algorithm, err := d.IsCertificateKeyMapped(ctx, Certs, input.Token)
 
 	if err != nil {
 		log.Error().Err(err).Msg("")
@@ -153,9 +153,9 @@ func (d *dDeviceUsecase) GetCertificateFromDb(ctx context.Context, deviceId stri
 
 	return Certs, err
 }
-func (*dDeviceUsecase) IsCertificateKeyMapped(_ context.Context, certificate []string, token string) (bool, error, string) {
+func (*dDeviceUsecase) IsCertificateKeyMapped(_ context.Context, certificate []string, token string) (bool, string, error) {
 
-	isValidDevice, err, algorithm := IdentifyAndVerifyJWT(token, certificate)
+	isValidDevice, algorithm, err := IdentifyAndVerifyJWT(token, certificate)
 
-	return isValidDevice, err, algorithm
+	return isValidDevice, algorithm, err
 }
